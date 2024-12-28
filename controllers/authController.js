@@ -46,7 +46,7 @@ exports.signup = async (req, res) => {
         const { token, refreshToken } = generateTokens(userId);
 
         // Store the refresh token in the database
-        db.query(
+      db.query(
           "UPDATE users SET refresh_token = ? WHERE id = ?",
           [refreshToken, userId],
           (err) => {
@@ -98,29 +98,32 @@ exports.login = (req, res) => {
 
       const user = results[0];
 
+      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      res.json({ token, user });
+
       // Generate JWT tokens
-      const { token, refreshToken } = generateTokens(user.id);
+      // const { token, refreshToken } = generateTokens(user.id);
 
-      // Store the refresh token in the database
-      db.query(
-        "UPDATE users SET refresh_token = ? WHERE id = ?",
-        [refreshToken, user.id],
-        (err) => {
-          if (err) {
-            console.error(err);
-            return res
-              .status(500)
-              .json({ message: "Error storing refresh token." });
-          }
+      // // Store the refresh token in the database
+      // db.query(
+      //   "UPDATE users SET refresh_token = ? WHERE id = ?",
+      //   [refreshToken, user.id],
+      //   (err) => {
+      //     if (err) {
+      //       console.error(err);
+      //       return res
+      //         .status(500)
+      //         .json({ message: "Error storing refresh token." });
+      //     }
 
-          // Send the tokens to the client and store refresh token in cookie
-          // console.log(res
-          // .cookie("refreshToken", refreshToken))
+      //     // Send the tokens to the client and store refresh token in cookie
+      //     // console.log(res
+      //     // .cookie("refreshToken", refreshToken))
 
-          return res.status(200)
-          .json({ message: "Login successful!", token, refreshToken });
-        }
-      );
+      //     return res.status(200)
+      //     .json({ message: "Login successful!", token, refreshToken });
+      //   }
+      // );
     }
   );
 };
