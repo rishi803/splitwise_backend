@@ -7,6 +7,7 @@ router.use(auth); // to verify login user and adding its detail in request to ge
 router.get('/', groupController.getGroups);
 router.get('/:id', groupController.getGroupDetails);
 router.get('/:id/expenses', groupController.getGroupExpenses);
+router.get('/:id/members', groupController.getGroupMembers);
 
 
 

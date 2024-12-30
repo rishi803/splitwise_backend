@@ -19,6 +19,8 @@ exports.getGroups = async (req, res) => {
       LIMIT ? OFFSET ?
     `, [req.user.id, limit, offset]);
 
+  
+
     const [totalCount] = await db.execute(
       'SELECT COUNT(*) as total FROM group_members WHERE user_id = ?',
       [req.user.id]
@@ -47,7 +49,7 @@ exports.getGroupDetails = async (req, res) => {
       WHERE g.id = ? AND gm.user_id = ?
       GROUP BY g.id
     `, [req.params.id, req.user.id]);
-
+    // console.log(group)
     if (!group.length) {
       return res.status(404).json({ message: 'Group not found' });
     }
@@ -71,6 +73,21 @@ exports.getGroupExpenses = async (req, res) => {
     `, [id]);
 
     res.json(expenses);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.getGroupMembers = async (req, res) => {
+  try {
+    const [members] = await db.execute(`
+      SELECT u.id, u.username as name
+      FROM users u
+      JOIN group_members gm ON u.id = gm.user_id
+      WHERE gm.group_id = ?
+    `, [req.params.id]);
+
+    res.json(members);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
