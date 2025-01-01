@@ -5,12 +5,12 @@ exports.addExpense = async (req, res) => {
       // const { error } = validateExpense(req.body);
       // if (error) return res.status(400).json({ message: error.details[0].message });
   
-      const { groupId, amount, description, splitType = 'EQUAL' } = req.body;
-      const paidBy = req.user.id;
+      const { groupId, amount, description,paidBy, splitType = 'EQUAL' } = req.body;
+      // const paidBy = req.user.id;
   
       const connection = await db.getConnection();
       await connection.beginTransaction();
-  
+     
       try {
         // Insert expense
        
@@ -24,7 +24,7 @@ exports.addExpense = async (req, res) => {
           'SELECT user_id FROM group_members WHERE group_id = ?',
           [groupId]
         );
-  
+       
         // Calculate split amount
         const splitAmount = amount / members.length;
   
