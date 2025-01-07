@@ -4,8 +4,12 @@ exports.validateSignup = (data) => {
   const schema = Joi.object({
     name: Joi.string().min(2).required(),
     email: Joi.string().email().required(),
-    password: Joi.string().min(6).required()
+    password: Joi.string().min(6).required(),
+    confirmPassword: Joi.string()
+      .required()
+      .oneOf([Joi.ref('password')], 'Passwords must match') 
   });
+
   return schema.validate(data);
 };
 

@@ -5,7 +5,8 @@ const auth = require('../middlewares/auth');
 
 router.use(auth);
 
-router.get('/search', userController.searchUsers);
+router.get('/', userController.searchUsers);
+router.put('/profile', userController.updateUserProfile);
 
 
 module.exports = router;

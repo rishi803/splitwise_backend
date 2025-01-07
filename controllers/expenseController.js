@@ -12,20 +12,20 @@ exports.addExpense = async (req, res) => {
       await connection.beginTransaction();
      
       try {
-        // Insert expense
+        
        
         const [result] = await connection.execute(
           'INSERT INTO expenses (group_id, amount, description, paid_by, split_type) VALUES (?, ?, ?, ?, ?)',
           [groupId, amount, description, paidBy, splitType]
         );
         
-        // Get group members
+       
         const [members] = await connection.execute(
           'SELECT user_id FROM group_members WHERE group_id = ?',
           [groupId]
         );
        
-        // Calculate split amount
+      
         const splitAmount = amount / members.length;
   
         // Create expense splits

@@ -2,7 +2,7 @@ const db = require('../config/db');
 
 exports.searchUsers = async (req, res) => {
     try {
-      const { q } = req.query;
+      const { search } = req.query;
       const limit = parseInt(req.query.limit) || 10;
   
       const [users] = await db.execute(`
@@ -10,7 +10,7 @@ exports.searchUsers = async (req, res) => {
         FROM users 
         WHERE (username LIKE ? OR email LIKE ?) 
         LIMIT ?
-      `, [`%${q}%`, `%${q}%`, limit]);
+      `, [`%${search}%`, `%${search}%`, limit]);
       
       res.json({ users });
     } catch (error) {
@@ -18,3 +18,14 @@ exports.searchUsers = async (req, res) => {
       res.status(500).json({ message: 'Server error' });
     }
   };
+
+exports.updateUserProfile= async(req,res)=>{
+    try{
+        const {name}=req.body;
+        const {id}=req.user;
+        await db.execute('UPDATE users SET username=? WHERE id=?',[name,id]);
+        res.json({name});
+    }catch(error){
+        res.status(500).json({message:'Server error'});
+    }
+}

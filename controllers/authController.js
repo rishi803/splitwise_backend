@@ -13,22 +13,38 @@ const generateTokens = (userId) => {
 
 exports.signup = async (req, res) => {
   try {
+
+    // const { error } = validateSignup(req.body);
+    // if (error) return res.status(400).json({ message: error.details[0].message });
+
+    // console.log(error);
   
     const { name, email, password } = req.body;
 
-   
-
     const [rows] = await db.execute('SELECT id FROM users WHERE email = ?', [email]);
-    console.log(req.body);
+    // console.log(req.body);
     if (rows.length) return res.status(400).json({ message: 'Email already registered' });
 
     const hashedPassword = await bcrypt.hash(password, 12);
-    await db.execute(
+    const [result]= await db.execute(
       'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
       [name, email, hashedPassword]
     );
  
-    res.status(201).json({ message: 'User created successfully' });
+    const { accessToken, refreshToken } = generateTokens(result.insertId);
+
+    // Store refresh token in httpOnly cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000 
+    });
+
+    res.status(201).json({
+      user: { id: result.insertId, name: name, email: email},
+      accessToken,
+      message: 'User created successfully'
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -42,11 +58,11 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
     
     const [users] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
-    if (!users.length) return res.status(401).json({ message: 'Invalid credentials' });
+    if (!users.length) return res.status(401).json({ message: 'User not found !' });
 
     const user = users[0];
     const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) return res.status(401).json({ message: 'Invalid credentials' });
+    if (!isValidPassword) return res.status(401).json({ message: 'Invalid credentials !' });
 
     const { accessToken, refreshToken } = generateTokens(user.id);
 
@@ -58,7 +74,7 @@ exports.login = async (req, res) => {
     });
 
     res.json({
-      user: { id: user.id, name: user.username, email: user.email },
+      user: { id: user.id, name: user.username, email: user.email, profile_img: user.profile_img },
       accessToken
     });
   } catch (error) {
